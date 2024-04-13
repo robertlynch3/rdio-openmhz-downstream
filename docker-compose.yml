@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  rdio-downstream:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      - SYS_FILE_PATH=/systems.json
+    restart: unless-stopped
+    volumes:
+      - ./systems.json:/systems.json
