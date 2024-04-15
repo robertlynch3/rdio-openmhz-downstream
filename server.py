@@ -4,7 +4,7 @@
 #
 #
 
-from flask import Flask, request, Response
+from flask import Flask, request
 from requests import post
 from json import load, dumps, loads
 import random
