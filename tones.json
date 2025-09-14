@@ -1,0 +1,11 @@
+[{
+    "name":"system1",
+    "toneA":1409,
+    "toneB":500,
+    "script-path":"custom-scripts/slack_upload.py",
+    "customVariables":{ 
+        "slack-channel": "your-channel-id",
+        "slack-token":"token-1",
+        "slack-message":"<!channel> page received at {}"
+    }
+}]

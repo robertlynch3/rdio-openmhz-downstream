@@ -1,3 +1,4 @@
 {
-    "1":"mysystem"
+    "1":"mysystem",
+    "2":{"name":"pager","two-tone":true}
 }
