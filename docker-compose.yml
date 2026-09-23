@@ -8,6 +8,11 @@ services:
       - 8080:8080
     environment:
       - SYS_FILE_PATH=/systems.json
+      - TZ=America/New_York
     restart: unless-stopped
     volumes:
       - ./systems.json:/systems.json
+      - ./tones.json:/tones.json
+      - ./custom-scripts/:/custom-scripts/
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro

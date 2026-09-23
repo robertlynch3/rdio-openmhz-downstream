@@ -1,11 +1,26 @@
-[{
-    "name":"system1",
-    "toneA":1409,
-    "toneB":500,
-    "script-path":"custom-scripts/slack_upload.py",
-    "customVariables":{ 
-        "slack-channel": "your-channel-id",
-        "slack-token":"token-1",
-        "slack-message":"<!channel> page received at {}"
+[
+    {
+        "name":"Fire Dispatch",
+        "toneA":1409,
+        "toneB":500,
+        "tolerance_hz":2,
+        "script-path":"custom-scripts/",
+        "customVariables":{
+            "slack-channel":"your-channel-id",
+            "slack-token":"token-1",
+            "slack-message":"<!channel> Fire page received at {}"
+        }
+    },
+    {
+        "name":"EMS Dispatch",
+        "toneA":800,
+        "toneB":1200,
+        "tolerance_hz":2,
+        "script-path":"custom-scripts/",
+        "customVariables":{
+            "slack-channel":"your-other-channel-id",
+            "slack-token":"token-1",
+            "slack-message":"<!channel> EMS page received at {}"
+        }
     }
-}]
+]

@@ -11,7 +11,7 @@ import random
 import string
 from dotenv import load_dotenv
 from os import remove, getenv, path, makedirs
-from sys import exit
+from sys import exit, path as sys_path
 from icad_tone_detection import tone_detect
 import importlib
 
@@ -36,9 +36,20 @@ try:
         tonesFile=load(jsonfile)
 except:
     print('Could not find tones.json file')
+    tonesFile=[]
 
-if 'script-path' in tonesFile:
-    custom_script=importlib.import_module(tonesFile['script-path'])
+# tones.json may hold a single tone-group object (legacy) or a list of them
+if isinstance(tonesFile, dict):
+    tonesFile=[tonesFile]
+
+custom_scripts={}
+for toneGroup in tonesFile:
+    script_path=toneGroup.get('script-path')
+    script_module=toneGroup.get('script-module', 'slack_upload')
+    if script_path and script_module not in custom_scripts:
+        if script_path not in sys_path:
+            sys_path.append(script_path)
+        custom_scripts[script_module]=importlib.import_module(script_module).custom_script
 
 from datetime import datetime
 from calendar import timegm
@@ -70,16 +81,20 @@ def rdio_upload():
         if data['system'] not in systemFile:
             return('System Shortname not found'), 500 
         if 'two-tone' in systemFile[data['system']] and systemFile[data['system']]['two-tone']==True:
-            result=tone_detect(request.files['audio'], detect_pulsed=False, detect_long=False, detect_hi_low=False, detect_mdc=False).two_tone_result
-            if result == []:
-                return("Call imported successfully.\n",200)
-            else:
-                for qc in result:
-                    if qc['dectected'][0] in range(tonesFile['toneA']+2,tonesFile['toneA']-2) and qc['dectected'][0] in range(tonesFile['toneB']+2,tonesFile['toneB']-2):
-                       custom_script.custom_script(detectorName=tonesFile['name'],filename=file.request.files['audio'].filename, file=request.files['audio'].read(), **tonesFile['customVariables'])
-                       return("Call imported successfully.\n",200)
-                    else:
-                        return("Call imported successfully.\n",200)
+            file=request.files['audio']
+            file.save(f'{CAPTURE_DIR}/{file.filename}')
+            filename=file.filename
+            filepath=f"{CAPTURE_DIR}/{file.filename}"
+            result=tone_detect(open(f"{filepath}", "rb"), detect_pulsed=False, detect_long=False, detect_hi_low=False, detect_mdc=False).two_tone_result
+            for qc in result:
+                detected_a, detected_b=qc['detected'][0], qc['detected'][1]
+                for toneGroup in tonesFile:
+                    tolerance_hz=toneGroup.get('tolerance_hz', 2)
+                    if abs(detected_a-toneGroup['toneA'])<=tolerance_hz and abs(detected_b-toneGroup['toneB'])<=tolerance_hz:
+                        script_module=toneGroup.get('script-module', 'slack_upload')
+                        custom_scripts[script_module](detectorName=toneGroup['name'], filename=filename, filepath=filepath, **toneGroup.get('customVariables', {}))
+            remove(f"{filepath}")
+            return("Call imported successfully.\n",200)
         else:
             start_time=int(timegm(datetime.strptime(data['dateTime'], "%Y-%m-%dT%H:%M:%SZ").timetuple()))
             duration=0

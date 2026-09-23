@@ -3,3 +3,5 @@ python-dotenv
 gunicorn
 requests
 icad_tone_detection
+slack_sdk
+pytz
